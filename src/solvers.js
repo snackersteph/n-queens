@@ -16,10 +16,10 @@
 
 
 window.findNRooksSolution = function(n) {
-  var solution = undefined; //fixme
+  var solution = []; //fixme
   
   // Create a blank board 
-  var board = new Board(n);  
+  var board = new Board({n: n});  
   
   // Place the first piece down at (0,0);   
   var traverse = function(aBoard, startRow, startCol) {
@@ -28,26 +28,28 @@ window.findNRooksSolution = function(n) {
     
     var count = 1;
 
-    for (var j = 0; j < n; j++) {
-      for (var i = 0; i < n; i++) {
-        if (!board.attributes[j][i] === 1) {
+    for (var row = 0; row < n; row++) {
+      for (var col = 0; col < n; col++) {
+        
+        if (!board.attributes[row][col]) {
 
           // Place next piece at first valid spot
-          board.attributes[j][i] = 1;
+          board.attributes[row][col] = 1;
           count++;
+        }
 
-          // If piece creates conflict, remove piece
-          if (board.hasRowConflictAt(j) || board.hasColConflictAt(j)) {
-            board.attributes[j][i] = 0;
-            count--;
-          }
+        // If piece creates conflict, remove piece
+        if (board.hasRowConflictAt(row) || board.hasColConflictAt(col)) {
+          debugger;
+          board.attributes[row][col] = 0;
+          count--;
         }
       }
     }
 
     // If valid solution, set board = solution
     if (count === n) {
-      solution = JSON.stringify(board);
+      solution = board.rows();
     } else {
       startCol++;
       if (startCol >= n) {
@@ -59,7 +61,7 @@ window.findNRooksSolution = function(n) {
     }
   };
 
-  return traverse(board, 0, 0);
+  traverse(board, 0, 0);
   
     
     // if (count === n) {
@@ -74,12 +76,11 @@ window.findNRooksSolution = function(n) {
     //   //unless board.attributes[startRow][startCol] is equal to 1, in which case we skip
     // }
 
-
-
-
   console.log('Single solution for ' + n + ' rooks:', JSON.stringify(solution));
   return solution;
 };
+
+this.findNRooksSolution(3);
 
 // return the number of nxn chessboards that exist, with n rooks placed such that none of them can attack each other
 window.countNRooksSolutions = function(n) {
