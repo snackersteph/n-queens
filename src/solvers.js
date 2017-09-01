@@ -12,54 +12,57 @@
 
 
 // return a matrix (an array of arrays) representing a single nxn chessboard, with n rooks placed such that none of them can attack each other
+window.findAsolution = function(aBoard, startRow, startCol, validator, n, callback) {
+  // Place the first piece down at (0,0); 
+  aBoard.attributes[startRow][startCol] = 1;
+  var count = 1;
+
+  for (var row = 0; row < n; row++) {
+    for (var col = 0; col < n; col++) {
+      if (!aBoard.attributes[row][col]) {
+        // Place next piece at first valid spot
+        aBoard.attributes[row][col] = 1;
+        count++;
+      }
+      //*****add a callback to check for these (below) conflicts or for queen conflicts
+      // If piece creates conflict, remove piece
+      if (aBoard[validator](row) || aBoard[validator](col)) {
+        aBoard.attributes[row][col] = 0;
+        count--;
+      }
+    }
+  }
+   
+  // If valid solution, set board = solution
+  if (count === n) {
+    return callback();
+  } else {
+    startCol++;
+    if (startCol >= n) {
+      startCol = 0;
+      startRow++;
+    }
+    aBoard = new Board(n);
+    return findAsolution(aBoard, startRow, startCol, validator, n, callback);
+  }
+};
+
 window.findNRooksSolution = function(n) {
-  var solution = []; //fixme
-  
   // Create a blank board 
   var board = new Board({n: n});  
   
   // Place the first piece down at (0,0);   
-  var traverse = function(aBoard, startRow, startCol) {
-    // Place the first piece down at (0,0); 
-    board.attributes[startRow][startCol] = 1;
-    var count = 1;
 
-    for (var row = 0; row < n; row++) {
-      for (var col = 0; col < n; col++) {
-        if (!board.attributes[row][col]) {
-          // Place next piece at first valid spot
-          board.attributes[row][col] = 1;
-          count++;
-        }
-        // If piece creates conflict, remove piece
-        if (board.hasRowConflictAt(row) || board.hasColConflictAt(col)) {
-          board.attributes[row][col] = 0;
-          count--;
-        }
-      }
-    }
-     
-    // If valid solution, set board = solution
-    if (count === n) {
-      solution = board.rows();
-    } else {
-      startCol++;
-      if (startCol >= n) {
-        startCol = 0;
-        startRow++;
-      }
-      board = new Board(n);
-      traverse(board, startRow, startCol);
-    }
-  };
-
-  traverse(board, 0, 0);
+  var solution = findAsolution(board, 0, 0, 'hasAnyRooksConflicts', n, function() {
+    return _.map(board.rows(), function(row){
+      return row.slice();
+    });
+  });
 
   console.log('Single solution for ' + n + ' rooks:', JSON.stringify(solution));
   return solution;
 };
 
-this.findNRooksSolution(3);
 
 // return the number of nxn chessboards that exist, with n rooks placed such that none of them can attack each other
 window.countNRooksSolutions = function(n) {
